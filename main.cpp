@@ -76,7 +76,6 @@ void change(int syn)
 int F(int inh)
 {
 	int syn;
-	//if (c == SLAG)
 	if (c == SLAG)
 	{
 		cout << "F::=" << c << endl;
@@ -96,59 +95,68 @@ int F(int inh)
 int X(int inh)
 {
 	int syn = 0, syn1 = 0, syn2 = 0;
+	bool finished = (c == '*');
 	if (c != END)
 		c = yylex();
 	if (c == MULT)
 	{
-		cout << "X::=*FX;" << endl;
+		cout << "X::=*FX" << endl;
 		c = yylex();
 		syn1 = F(inh);
 		syn2 = X(inh); //вычисление данного множителя рекурсивно
-		change(syn1);
-		change(syn2);
-		syn = 0;
+		if (syn1 != ERROR && syn2 != ERROR) {
+			change(syn1);
+			change(syn2);
+			syn = 0;
+		}
+		else syn = ERROR;
 	}
-	else if (c == PLUS || c == END)
+	else if ((c == PLUS || c == END) && finished)
 	{
-		cout << "X::=_;" << endl;
-		syn = 0;
+		cout << "X::=_" << endl;
 	}
 	else
-		return ERROR;
+		return syn = ERROR;
 	return syn;
 }
 
 int T(int inh)
 {
 	int syn = 0, syn1 = 0, syn2 = 0;
-	cout << "T::=FX;" << endl;
+	cout << "T::=FX" << endl;
 	syn1 = F(inh);
 	syn2 = X(inh);
-	change(syn1);
-	change(syn2);
-	syn = 0;
+	if (syn1 != ERROR && syn2 != ERROR) {
+		change(syn1);
+		change(syn2);
+		syn = 0;
+	}
+	else syn = ERROR;
 	return syn;
 }
 
 int Z(int inh)
 {
 	int syn = 0, syn1 = 0, syn2 = 0;
+	bool unf = (c == '+');
 	if (c != END)
 		c = yylex();
-	if (c == END)
+	if (c == END && !unf)
 	{
-		cout << "Z::=_;" << endl;
-		return 0;
+		cout << "Z::=_" << endl;
 	}
-	else if (c == SLAG)
+	else if (c == SLAG && c != END)
 	{
-		cout << "Z::=+TZ;" << endl;
+		cout << "Z::=+TZ" << endl;
 		amount++;
 		syn1 = T(inh);
 		syn2 = Z(inh);
-		change(syn1);
-		change(syn2);
-		syn = 0;
+		if (syn1 != ERROR && syn2 != ERROR) {
+			change(syn1);
+			change(syn2);
+			syn = 0;
+		}
+		else syn = ERROR;
 	}
 	else
 		syn = ERROR;
@@ -157,13 +165,16 @@ int Z(int inh)
 
 int E(int inh)
 {
-	cout << "E::=TZ;" << endl;
+	cout << "E::=TZ" << endl;
 	int syn, syn1, syn2;
 	syn1 = T(inh);
 	syn2 = Z(inh);
-	change(syn1);
-	change(syn2);
-	syn = 0;
+	if (syn1 != ERROR && syn2 != ERROR) {
+		change(syn1);
+		change(syn2);
+		syn = 0;
+	}
+	else syn = ERROR;
 	return syn;
 }
 
@@ -172,7 +183,7 @@ int S(int inh)
 	int syn;
 	if (c == SLAG)
 	{
-		cout << "S::=E;" << endl;
+		cout << "S::=E" << endl;
 		syn = E(inh);
 		return syn; // S_syn = E_syn
 	}
