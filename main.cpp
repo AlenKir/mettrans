@@ -63,6 +63,16 @@ int yylex()
 	}
 }
 
+void change(int syn)
+{
+	if (syn == K)
+		mas[amount][0] = mas[amount][0] + 1;
+	if (syn == M)
+		mas[amount][1] = mas[amount][1] + 1;
+	if (syn == N)
+		mas[amount][2] = mas[amount][2] + 1;
+}
+
 int F(int inh)
 {
 	int syn;
@@ -71,11 +81,11 @@ int F(int inh)
 		cout << "F::=" << c << endl;
 		syn = c;
 		if (c == K)
-			mas[amount][0]++;
+			syn = K;
 		if (c == M)
-			mas[amount][1]++;
+			syn = M;
 		if (c == N)
-			mas[amount][2]++;
+			syn = N;
 		return syn;
 	}
 	else
@@ -92,12 +102,15 @@ int X(int inh)
 		cout << "X::=*FX;" << endl;
 		c = yylex(); //!!!
 		syn1 = F(inh);
-		syn2 = X(inh);
+		syn2 = X(inh); //вычисление данного множителя рекурсивно
+		change(syn1);
+		change(syn2);
+		syn = 0;
 	}
 	else if (c == PLUS || c == END)
 	{
 		cout << "X::=_;" << endl;
-		//c = yylex(); //!!!
+		syn = 0;
 	}
 	else
 		return ERROR;
@@ -110,6 +123,9 @@ int T(int inh)
 	cout << "T::=FX;" << endl;
 	syn1 = F(inh);
 	syn2 = X(inh);
+	change(syn1);
+	change(syn2);
+	syn = 0;
 	return syn;
 }
 
@@ -129,6 +145,9 @@ int Z(int inh)
 		amount++;
 		syn1 = T(inh);
 		syn2 = Z(inh);
+		change(syn1);
+		change(syn2);
+		syn = 0;
 	}
 	else
 		syn = ERROR;
@@ -141,7 +160,9 @@ int E(int inh)
 	int syn, syn1, syn2;
 	syn1 = T(inh);
 	syn2 = Z(inh);
-	syn = 0; // что-то сделать
+	change(syn1);
+	change(syn2);
+	syn = 0;
 	return syn;
 }
 
