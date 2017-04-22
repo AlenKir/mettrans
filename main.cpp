@@ -13,7 +13,7 @@ using namespace std;
 #define MULT '*'
 #define END '$' //нужно?
 
-#define ERROR 0
+#define ERROR -1
 
 char c;
 
@@ -68,7 +68,7 @@ int F(int inh)
 	int syn;
 	if (c == K || c == M || c == N)
 	{
-		cout << "F::=" <<  c << endl;
+		cout << "F::=" << c << endl;
 		syn = c;
 		if (c == K)
 			mas[amount][0]++;
@@ -82,64 +82,76 @@ int F(int inh)
 		return ERROR;
 }
 
-int T(int inh)
+int X(int inh)
 {
-	int syn;
-	if (c == K || c == M || c == N)
+	int syn = 0, syn1 = 0, syn2 = 0;
+	if (c != END)
+		c = yylex();
+	if (c == MULT)
 	{
-		cout << "T::=F" << endl;
-		syn = F(inh);
-		return syn;
+		cout << "X::=*FX;" << endl;
+		c = yylex(); //!!!
+		syn1 = F(inh);
+		syn2 = X(inh);
+	}
+	else if (c == PLUS || c == END)
+	{
+		cout << "X::=_;" << endl;
+		//c = yylex(); //!!!
 	}
 	else
 		return ERROR;
+	return syn;
+}
 
-	//int synthesized;
-	//switch (symbol)
-	//{
-	//case AP_left_KW: {if ((synthesized = A(inherited)) == -1) //Y ::= { Ai = Y i } A )
-	//	return -1;
-	//				 else if (symbol == AP_right_KW)
-	//					 return synthesized; //{Ys = As }
-	//				 else return -1; }
-	//case AP_right_KW: {symbol = yylex();//Y ::= )
-	//	return inherited; }// { Ys = Yi }
-	//default: return -1;
-	//}
+int T(int inh)
+{
+	int syn = 0, syn1 = 0, syn2 = 0;
+	cout << "T::=FX;" << endl;
+	syn1 = F(inh);
+	syn2 = X(inh);
+	return syn;
+}
+
+int Z(int inh)
+{
+	int syn = 0, syn1 = 0, syn2 = 0;
+	if (c != END)
+		c = yylex();
+	if (c == END)
+	{
+		cout << "Z::=_;" << endl;
+		return 0; //Z()?
+	}
+	else if (c == K || c == M || c == N)
+	{
+		cout << "Z::=+TZ;" << endl;
+		amount++;
+		syn1 = T(inh);
+		syn2 = Z(inh);
+	}
+	else
+		syn = ERROR;
+	return syn;
 }
 
 int E(int inh)
 {
-	int syn;
-	if (c == K || c == M || c == N)
-	{
-		cout << "E::=T" << endl;
-		syn = T(inh);		
-		c = yylex();
-		if (c == END)
-			return syn; // E_syn = T_syn
-	}
-	else if (c == PLUS)
-	{
-		amount++;
-		c = yylex();
-		syn = T(inh);
-	}
-	else
-		return ERROR;
-	//int T(int inherited)
-	//{
-	//	symbol = yylex();
-	//	return Y(inherited + 1);// T ::= ( { Yi = Ti + 1 } Y { Ts = Ys }
-	//}
+	cout << "E::=TZ;" << endl;
+	int syn, syn1, syn2;
+	syn1 = T(inh);
+	syn2 = Z(inh);
+	syn = 0; // что-то сделать
+	return syn;
 }
 
 int S(int inh)
 {
+	int syn;
 	if (c == K || c == M || c == N)
 	{
-		cout << "S::=E" << endl;
-		int syn = E(inh);
+		cout << "S::=E;" << endl;
+		syn = E(inh);
 		return syn; // S_syn = E_syn
 	}
 	else
@@ -170,7 +182,7 @@ int main()
 			cout << mas[i][j] << " ";
 		cout << endl;
 	}
-	int minK = 0, minM = 0, minN = 0;
+	int minK = 100, minM = 100, minN = 100;
 	for (int i = 0; i < amount + 1; i++)
 	{
 		if (mas[i][0] < minK)
