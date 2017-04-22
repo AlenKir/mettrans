@@ -76,7 +76,8 @@ void change(int syn)
 int F(int inh)
 {
 	int syn;
-	if (c == K || c == M || c == N)
+	//if (c == SLAG)
+	if (c == SLAG)
 	{
 		cout << "F::=" << c << endl;
 		syn = c;
@@ -100,7 +101,7 @@ int X(int inh)
 	if (c == MULT)
 	{
 		cout << "X::=*FX;" << endl;
-		c = yylex(); //!!!
+		c = yylex();
 		syn1 = F(inh);
 		syn2 = X(inh); //вычисление данного множителя рекурсивно
 		change(syn1);
@@ -137,9 +138,9 @@ int Z(int inh)
 	if (c == END)
 	{
 		cout << "Z::=_;" << endl;
-		return 0; //Z()?
+		return 0;
 	}
-	else if (c == K || c == M || c == N)
+	else if (c == SLAG)
 	{
 		cout << "Z::=+TZ;" << endl;
 		amount++;
@@ -169,7 +170,7 @@ int E(int inh)
 int S(int inh)
 {
 	int syn;
-	if (c == K || c == M || c == N)
+	if (c == SLAG)
 	{
 		cout << "S::=E;" << endl;
 		syn = E(inh);
