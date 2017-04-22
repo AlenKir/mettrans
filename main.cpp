@@ -7,8 +7,6 @@ using namespace std;
 #define M 'm'
 #define N 'n'
 
-#define SLAG 'k', 'n', 'm'
-
 #define PLUS '+'
 #define MULT '*'
 #define END '$' //нужно?
@@ -76,7 +74,7 @@ void change(int syn)
 int F(int inh)
 {
 	int syn;
-	if (c == SLAG)
+	if ((c == K || c == M || c == N) && c != END)
 	{
 		cout << "F::=" << c << endl;
 		syn = c;
@@ -92,10 +90,14 @@ int F(int inh)
 		return ERROR;
 }
 
+int X1(int inh)
+{
+	return inh;
+}
+
 int X(int inh)
 {
 	int syn = 0, syn1 = 0, syn2 = 0;
-	bool finished = (c == '*');
 	if (c != END)
 		c = yylex();
 	if (c == MULT)
@@ -107,13 +109,14 @@ int X(int inh)
 		if (syn1 != ERROR && syn2 != ERROR) {
 			change(syn1);
 			change(syn2);
-			syn = 0;
+			syn = 1;
 		}
 		else syn = ERROR;
 	}
-	else if ((c == PLUS || c == END) && finished)
+	else if ((c == PLUS || c == END) /*&& finished*/)
 	{
 		cout << "X::=_" << endl;
+		syn = 0;
 	}
 	else
 		return syn = ERROR;
@@ -138,28 +141,37 @@ int T(int inh)
 int Z(int inh)
 {
 	int syn = 0, syn1 = 0, syn2 = 0;
-	bool unf = (c == '+');
-	if (c != END)
+	if (c == PLUS)
+	{
 		c = yylex();
-	if (c == END && !unf)
-	{
-		cout << "Z::=_" << endl;
-	}
-	else if (c == SLAG && c != END)
-	{
-		cout << "Z::=+TZ" << endl;
-		amount++;
-		syn1 = T(inh);
-		syn2 = Z(inh);
-		if (syn1 != ERROR && syn2 != ERROR) {
-			change(syn1);
-			change(syn2);
-			syn = 0;
+		if ((c == K || c == M || c == N) && c != END)
+		{
+			cout << "Z::=+TZ" << endl;
+			amount++;
+			syn1 = T(inh);
+			syn2 = Z(inh);
+			if (syn1 != ERROR && syn2 != ERROR) {
+				change(syn1);
+				change(syn2);
+				syn = 1;
+			}
+			else
+				syn = ERROR;
 		}
-		else syn = ERROR;
+		else
+			syn = ERROR;
 	}
 	else
-		syn = ERROR;
+	{
+		if (c != END)
+			c = yylex();
+		if (c == END)
+		{
+			cout << "Z::=_" << endl;
+		}
+		else
+			syn = ERROR;
+	}
 	return syn;
 }
 
@@ -181,7 +193,7 @@ int E(int inh)
 int S(int inh)
 {
 	int syn;
-	if (c == SLAG)
+	if ((c == K || c == M || c == N))
 	{
 		cout << "S::=E" << endl;
 		syn = E(inh);
